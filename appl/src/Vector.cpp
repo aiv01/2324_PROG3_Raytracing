@@ -21,5 +21,16 @@ Vector3 Vector3::Normalized() const
 
 float Vector3::Magnetude() const 
 {
-    return sqrtf(X * X + Y * Y + Z * Z);
+    //return sqrtf(X * X + Y * Y + Z * Z);
+    return sqrtf(MagnetudeSquared());
+}
+
+float Vector3::MagnetudeSquared() const 
+{
+    return Dot(*this);
+}
+
+float Vector3::Dot(const Vector3& InOther) const
+{
+    return X * InOther.X + Y * InOther.Y + Z * InOther.Z;
 }

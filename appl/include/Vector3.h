@@ -14,4 +14,8 @@ struct Vector3 {
     Vector3 Normalized() const;
 
     float Magnetude() const;
+
+    float MagnetudeSquared() const;
+
+    float Dot(const Vector3& InOther) const;
 };
