@@ -9,11 +9,11 @@ public:
     Scene(int w, int h, SDL_Renderer*);
     ~Scene();
     void Update(float delta_time);
-    std::vector<Sphere> spheres;
+    std::vector<Sphere> Spheres;
 
 private:
-    int width;
-    int height;
-    SDL_Renderer* renderer;
+    int Width;
+    int Height;
+    SDL_Renderer* Renderer;
     
 };
