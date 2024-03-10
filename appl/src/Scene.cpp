@@ -26,7 +26,7 @@ Scene::~Scene()
 
 }
 
-void Scene::Update(float delta_time) 
+void Scene::Update(float InDeltaTime) 
 {   
     static float AspectRatio = (float)Width / (float)Height;
 
@@ -50,16 +50,16 @@ void Scene::Update(float delta_time)
             Plane_X *= Fov * AspectRatio;
             Plane_Y *= Fov;
 
-            Vector3 planePoint{Plane_X, Plane_Y, -1.f};
+            Vector3 PlanePoint{Plane_X, Plane_Y, -1.f};
 
-            Vector3 rayDir = planePoint - CameraPosition;
-            rayDir = rayDir.Normalized();
+            Vector3 RayDirection = PlanePoint - CameraPosition;
+            RayDirection = RayDirection.Normalized();
 
-            Ray ray{CameraPosition, rayDir};
+            Ray PixelRay{CameraPosition, RayDirection};
 
-            XColor pixelColor = Raytracer.RayTrace(ray, *this);
+            XColor PixelColor = Raytracer.RayTrace(PixelRay, *this);
 
-            SDL_SetRenderDrawColor(this->Renderer, pixelColor.R * 255.f, pixelColor.G * 255.f, pixelColor.B * 255.f, 255);
+            SDL_SetRenderDrawColor(this->Renderer, PixelColor.R * 255.f, PixelColor.G * 255.f, PixelColor.B * 255.f, 255);
             SDL_RenderDrawPoint(this->Renderer, W, H);
         }   
     }
