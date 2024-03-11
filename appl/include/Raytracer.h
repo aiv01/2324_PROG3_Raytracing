@@ -6,5 +6,5 @@
 class Raytracer 
 {
 public:
-    XColor RayTrace(const Ray& InRay, Scene& InScene);
+    XColor RayTrace(const Ray& InRay, Scene& InScene, int InCurrentDepth);
 };

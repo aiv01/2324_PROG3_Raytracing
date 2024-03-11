@@ -24,4 +24,6 @@ struct Vector3 {
     float MagnetudeSquared() const;
 
     float Dot(const Vector3& InOther) const;
+
+    Vector3 Reflect(const Vector3& InNorm) const;
 };

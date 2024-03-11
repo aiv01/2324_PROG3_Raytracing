@@ -6,6 +6,7 @@ struct Material
 {
     XColor Albedo;
     float SpecularShiningFactor;
+    float ReflectionFactor;
 };
 
 struct Sphere 

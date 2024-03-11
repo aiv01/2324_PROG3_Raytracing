@@ -1,12 +1,20 @@
 #include "Raytracer.h"
 #include "Sphere.h"
 #include <cmath>
+#include <limits>
 
 struct RayHit 
 {
     Vector3 Point;
     Vector3 Normal;
     const Sphere* Object;
+    float Distance;
+};
+
+enum class ERayCastStrategy 
+{
+    RAYCAST_BEST,
+    RAYCAST_FIRST
 };
 
 
@@ -42,53 +50,69 @@ static bool RaySphereIntersection(const Ray& InRay, const Sphere& InSphere, RayH
     Hit.Point = InRay.Origin + InRay.Direction * T0;
     Hit.Normal = (Hit.Point - InSphere.Center).Normalized();
     Hit.Object = &InSphere;
+    Hit.Distance = T0;
     return true;
 }
 
-static bool RayCast(const Ray& InRay, const Scene& InScene, RayHit& Hit) 
+static bool RayCast(const Ray& InRay, const Scene& InScene, RayHit& HitOut, ERayCastStrategy CastStategy) 
 {
+    RayHit BestHit;
+    BestHit.Distance = std::numeric_limits<float>::max();
+    
+    bool HasBestHit = false;
+
     for(auto& EachSphere : InScene.Spheres) 
     {   
-        //TODO: Improve taking best hit 
-        if (RaySphereIntersection(InRay, EachSphere, Hit)) 
+        RayHit Hit;
+        bool HasHit = RaySphereIntersection(InRay, EachSphere, Hit);
+
+        if (HasHit && Hit.Distance < BestHit.Distance) 
         {
-            return true;
+            BestHit = Hit;
+            HasBestHit = true;
+            if (CastStategy == ERayCastStrategy::RAYCAST_FIRST) break;
         }
     }
-    return false;
+
+    if (HasBestHit) {
+        HitOut = BestHit;
+    }
+    return HasBestHit;
 }
 
 
-XColor Raytracer::RayTrace(const Ray& InRay, Scene& InScene)
+XColor Raytracer::RayTrace(const Ray& InRay, Scene& InScene, int InCurrentDepth)
 {
+    if (InCurrentDepth > 3) return InScene.BackgroundColor;
+
     //Primary Result
     RayHit Hit;
-    bool HasHit = RayCast(InRay, InScene, Hit);
-    if (!HasHit) return {0, 0, 0};
+    bool HasHit = RayCast(InRay, InScene, Hit, ERayCastStrategy::RAYCAST_BEST);
+    if (!HasHit) return InScene.BackgroundColor;
 
-    //Secondary Ray (Shadow ray)
+    //Shadow ray
     Vector3 InvertedLightDirection = InScene.Light.Direction * -1.f;
 
-
-    float bias = 1e-4;
+    static float bias = 1e-4;
     Ray ShadowRay;
     ShadowRay.Origin = Hit.Point + (Hit.Normal * bias);
     ShadowRay.Direction = InvertedLightDirection;
 
     RayHit ShadowHit;
-    bool ShadowHasHit = RayCast(ShadowRay, InScene, ShadowHit);
+    bool ShadowHasHit = RayCast(ShadowRay, InScene, ShadowHit, ERayCastStrategy::RAYCAST_FIRST);
     //if (ShadowHasHit) return {0, 0, 0};
 
     XColor SphereColor = Hit.Object->Material.Albedo;
 
-    //PHONG
+    //BLINN-PHONG
     //1. Ambient
     float AmbientFactor = 0.1f;
     XColor Ambient = SphereColor * AmbientFactor;
 
     //2. Diffuse
     float Lambert = fmaxf(0, InvertedLightDirection.Dot(Hit.Normal));
-    XColor Diffuse = SphereColor * Lambert;
+
+    XColor Diffuse = (SphereColor + InScene.Light.Color)  * Lambert;
 
     //3. Specular
     Vector3 L = InvertedLightDirection;
@@ -99,11 +123,25 @@ XColor Raytracer::RayTrace(const Ray& InRay, Scene& InScene)
     float SpecularIntensity = powf(SpecularFactor, Hit.Object->Material.SpecularShiningFactor);
     XColor Specular = InScene.Light.Color * SpecularIntensity;
 
-    XColor Phong{0, 0, 0};
+    XColor Phong = InScene.BackgroundColor;
     Phong = Phong + Ambient;
     Phong = Phong + Diffuse;
     Phong = Phong + Specular;
-    Phong = Phong.Clamp();
-    return Phong;
-   
+    //Phong = Phong.Clamp();
+    //return Phong;
+
+    XColor FinalColor = Phong;
+
+    if (Hit.Object->Material.ReflectionFactor > 0.f) 
+    {
+        Ray SecondaryRay;
+        SecondaryRay.Origin = Hit.Point + (Hit.Normal * bias);
+        SecondaryRay.Direction = InRay.Direction.Reflect(Hit.Normal);
+
+        XColor ReflectionColor = RayTrace(SecondaryRay, InScene, InCurrentDepth + 1);
+        
+        FinalColor = FinalColor + ReflectionColor * Hit.Object->Material.ReflectionFactor;
+    }
+    FinalColor = FinalColor.Clamp();
+    return FinalColor;
 }

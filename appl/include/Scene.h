@@ -20,6 +20,7 @@ public:
     
     std::vector<Sphere> Spheres;
     Light Light;
+    XColor BackgroundColor;
 
 private:
     int Width;

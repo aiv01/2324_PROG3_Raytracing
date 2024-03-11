@@ -49,3 +49,9 @@ float Vector3::Dot(const Vector3& InOther) const
 {
     return X * InOther.X + Y * InOther.Y + Z * InOther.Z;
 }
+
+Vector3 Vector3::Reflect(const Vector3& InNorm) const 
+{
+    //R = I – 2 * dot(I,N) * N
+    return *this - InNorm * (2.f * this->Dot(InNorm));
+}
