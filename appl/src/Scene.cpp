@@ -18,7 +18,13 @@ Scene::Scene(int InWidth, int InHeight, SDL_Renderer* InRender)
    Renderer = InRender;
 
    Sphere Sphere01{Vector3{0, 0, -5}, 2.f};
+   Sphere01.Material.Albedo = {1, 0, 0};
+   Sphere01.Material.SpecularShiningFactor = 40;
+
    Spheres.push_back(Sphere01);
+
+   Light.Direction = {0, -1, 0};
+   Light.Color = {1, 1, 1};
 }
 
 Scene::~Scene() 

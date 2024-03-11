@@ -2,6 +2,14 @@
 #include "SDL.h"
 #include <vector>
 #include "Sphere.h"
+#include "Color.h"
+
+
+struct Light 
+{
+    Vector3 Direction;
+    XColor Color;
+};
 
 class Scene 
 {
@@ -9,7 +17,9 @@ public:
     Scene(int w, int h, SDL_Renderer*);
     ~Scene();
     void Update(float delta_time);
+    
     std::vector<Sphere> Spheres;
+    Light Light;
 
 private:
     int Width;

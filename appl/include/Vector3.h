@@ -5,11 +5,17 @@ struct Vector3 {
     float Y;
     float Z;
 
+    Vector3();
+
     Vector3(float InX, float InY, float InZ);
 
     Vector3 operator-(const Vector3& InOther) const;
 
+    Vector3 operator+(const Vector3& InOther) const;
+
     Vector3 operator/(const float InScalar) const;
+
+    Vector3 operator*(const float InScalar) const;
 
     Vector3 Normalized() const;
 
